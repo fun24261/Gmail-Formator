@@ -1,12 +1,8 @@
 from itertools import product
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
-# সরাসরি Bot Token
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
-
-if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN is missing!")
 
 # Gmail variation generator
 def generate_gmails(gmail, count):
@@ -21,14 +17,14 @@ def generate_gmails(gmail, count):
     return variations
 
 # /start command
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("Send me a Gmail address:")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Send me a Gmail address:")
 
 # Handle messages
-def handle_message(update: Update, context: CallbackContext):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
     if "@" not in text:
-        update.message.reply_text("Invalid Gmail. Try again.")
+        await update.message.reply_text("Invalid Gmail. Try again.")
         return
 
     keyboard = [
@@ -42,33 +38,31 @@ def handle_message(update: Update, context: CallbackContext):
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Select number of Gmail variations:", reply_markup=reply_markup)
+    await update.message.reply_text("Select number of Gmail variations:", reply_markup=reply_markup)
 
 # Handle button presses
-def button(update: Update, context: CallbackContext):
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    query.answer()
+    await query.answer()
     gmail, count = query.data.split("|")
     count = int(count)
     variations = generate_gmails(gmail, count)
     msg = "\n".join(variations)
     if len(msg) > 4000:  # Telegram message limit
         msg = "\n".join(variations[:50]) + "\n... (truncated)"
-    query.edit_message_text(f"Generated {len(variations)} Gmail(s):\n{msg}")
+    await query.edit_message_text(f"Generated {len(variations)} Gmail(s):\n{msg}")
 
 # Main function
 def main():
-    updater = Updater(token=BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", start))
-    dp.add_handler(CallbackQueryHandler(button))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", start))
+    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
     print("Bot started successfully!")
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
