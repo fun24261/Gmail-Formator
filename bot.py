@@ -5,9 +5,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
-MAX_VARIATIONS = 10000  # সর্বোচ্চ Gmail variations
+MAX_VARIATIONS = 10000
+CHUNK_FIRST = 100  # প্রথমে generate করা Gmail সংখ্যা
 
-# Dummy Flask server for Render port
+# Dummy Flask server (Free Plan compatibility)
 flask_app = Flask("")
 
 @flask_app.route("/")
@@ -22,13 +23,13 @@ def keep_alive():
     t.start()
 
 # Gmail generator
-def generate_gmails(gmail, count):
+def generate_gmails(gmail):
     username, domain = gmail.split("@")
     variations = []
     letters = [c for c in username]
     for p in product(*[[c.lower(), c.upper()] if c.isalpha() else [c] for c in letters]):
         variations.append("".join(p) + "@" + domain)
-        if len(variations) >= count or len(variations) >= MAX_VARIATIONS:
+        if len(variations) >= MAX_VARIATIONS:
             break
     return variations
 
@@ -41,48 +42,52 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(welcome_text)
 
-# Handle messages
+# Helper to send long messages in chunks
+async def send_long_message(chat_id, text, context):
+    chunk_size = 4000
+    for i in range(0, len(text), chunk_size):
+        await context.bot.send_message(chat_id, text[i:i+chunk_size])
+
+# Handle Gmail messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.strip()
-    if "@" not in text:
+    gmail = update.message.text.strip()
+    if "@" not in gmail:
         await update.message.reply_text("Invalid Gmail. আবার চেষ্টা করুন।")
         return
 
-    keyboard = [
-        [
-            InlineKeyboardButton("100", callback_data=f"{text}|100"),
-            InlineKeyboardButton("500", callback_data=f"{text}|500"),
-        ],
-        [
-            InlineKeyboardButton("1000", callback_data=f"{text}|1000"),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("কতটি Gmail variation তৈরি করতে চান?", reply_markup=reply_markup)
+    variations = generate_gmails(gmail)
+    first_chunk = variations[:CHUNK_FIRST]
+    remaining = variations[CHUNK_FIRST:]
 
-# Handle button presses
+    msg = "\n".join(first_chunk)
+    await send_long_message(update.message.chat_id, msg, context)
+
+    if remaining:
+        keyboard = [[InlineKeyboardButton("আরো তৈরি করুন", callback_data=gmail)]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text("আরো Gmail variations generate করতে নিচের বাটন চাপুন:", reply_markup=reply_markup)
+    else:
+        await update.message.reply_text("আর তৈরি করা যাচ্ছে না")
+
+# Handle "আরো তৈরি করুন" button
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    gmail, count = query.data.split("|")
-    count = int(count)
+    gmail = query.data
+    variations = generate_gmails(gmail)
+    first_chunk = variations[:CHUNK_FIRST]
+    remaining = variations[CHUNK_FIRST:]
 
-    variations = generate_gmails(gmail, count)
-    msg = "\n".join(variations)
-    remaining = MAX_VARIATIONS - len(variations)
-
-    if remaining > 0:
-        msg += f"\n\nআপনি আরও তৈরি করতে পারবেন ({remaining} পর্যন্ত)"
+    msg = "\n".join(remaining)
+    if msg:
+        await send_long_message(query.message.chat_id, msg, context)
+        await query.edit_message_text("সব Gmail variations পাঠানো হয়েছে")
     else:
-        msg += "\n\nআর তৈরি করা যাচ্ছে না"
-
-    if len(msg) > 4000:
-        msg = "\n".join(variations[:50]) + "\n... (truncated)"
-    await query.edit_message_text(f"Generated {len(variations)} Gmail(s):\n{msg}")
+        await query.edit_message_text("আর তৈরি করা যাচ্ছে না")
 
 # Main function
 def main():
-    keep_alive()  # Start dummy Flask server
+    keep_alive()  # Start dummy Flask server for Render Free Plan
 
     app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
