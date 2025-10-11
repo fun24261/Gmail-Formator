@@ -1,16 +1,30 @@
 from itertools import product
+from threading import Thread
+from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
+MAX_VARIATIONS = 10000  # সর্বোচ্চ Gmail variations
 
-MAX_VARIATIONS = 10000  # প্রতিটি Gmail username থেকে সর্বোচ্চ জেনারেট করা variation
+# Dummy Flask server for Render port
+flask_app = Flask("")
 
-# Gmail variation generator
+@flask_app.route("/")
+def home():
+    return "Bot is running!"
+
+def run_flask():
+    flask_app.run(host="0.0.0.0", port=5000)
+
+def keep_alive():
+    t = Thread(target=run_flask)
+    t.start()
+
+# Gmail generator
 def generate_gmails(gmail, count):
     username, domain = gmail.split("@")
     variations = []
-
     letters = [c for c in username]
     for p in product(*[[c.lower(), c.upper()] if c.isalpha() else [c] for c in letters]):
         variations.append("".join(p) + "@" + domain)
@@ -68,15 +82,16 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Main function
 def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    keep_alive()  # Start dummy Flask server
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", start))
-    app.add_handler(CallbackQueryHandler(button))
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
+    app_bot.add_handler(CommandHandler("start", start))
+    app_bot.add_handler(CommandHandler("help", start))
+    app_bot.add_handler(CallbackQueryHandler(button))
+    app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
     print("Bot started successfully!")
-    app.run_polling()
+    app_bot.run_polling()
 
 if __name__ == "__main__":
     main()
