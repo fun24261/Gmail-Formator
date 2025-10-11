@@ -1,77 +1,82 @@
-import os
-from flask import Flask
-from threading import Thread
 from itertools import product
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
 
-# Flask dummy server to satisfy Render
-app = Flask("")
+MAX_VARIATIONS = 10000  # প্রতিটি Gmail username থেকে সর্বোচ্চ জেনারেট করা variation
 
-@app.route("/")
-def home():
-    return "Bot is running!"
-
-def run():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
-
-# Gmail generator
+# Gmail variation generator
 def generate_gmails(gmail, count):
     username, domain = gmail.split("@")
     variations = []
+
     letters = [c for c in username]
     for p in product(*[[c.lower(), c.upper()] if c.isalpha() else [c] for c in letters]):
         variations.append("".join(p) + "@" + domain)
-        if len(variations) >= count:
+        if len(variations) >= count or len(variations) >= MAX_VARIATIONS:
             break
     return variations
 
-# Handlers
+# /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send me a Gmail address:")
+    welcome_text = (
+        "আপনাকে স্বাগতম\n"
+        "আপনি একটা gmail দিয়েই আনলিমিটেড জিমেইল তৈরি করতে পারবেন\n"
+        "দয়া করে আমাকে জিমেইল সেন্ড করুন"
+    )
+    await update.message.reply_text(welcome_text)
 
+# Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
     if "@" not in text:
-        await update.message.reply_text("Invalid Gmail. Try again.")
+        await update.message.reply_text("Invalid Gmail. আবার চেষ্টা করুন।")
         return
 
     keyboard = [
-        [InlineKeyboardButton("100", callback_data=f"{text}|100"),
-         InlineKeyboardButton("200", callback_data=f"{text}|200")],
-        [InlineKeyboardButton("500", callback_data=f"{text}|500"),
-         InlineKeyboardButton("1000", callback_data=f"{text}|1000")]
+        [
+            InlineKeyboardButton("100", callback_data=f"{text}|100"),
+            InlineKeyboardButton("500", callback_data=f"{text}|500"),
+        ],
+        [
+            InlineKeyboardButton("1000", callback_data=f"{text}|1000"),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Select number of Gmail variations:", reply_markup=reply_markup)
+    await update.message.reply_text("কতটি Gmail variation তৈরি করতে চান?", reply_markup=reply_markup)
 
+# Handle button presses
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     gmail, count = query.data.split("|")
     count = int(count)
+
     variations = generate_gmails(gmail, count)
     msg = "\n".join(variations)
+    remaining = MAX_VARIATIONS - len(variations)
+
+    if remaining > 0:
+        msg += f"\n\nআপনি আরও তৈরি করতে পারবেন ({remaining} পর্যন্ত)"
+    else:
+        msg += "\n\nআর তৈরি করা যাচ্ছে না"
+
     if len(msg) > 4000:
         msg = "\n".join(variations[:50]) + "\n... (truncated)"
     await query.edit_message_text(f"Generated {len(variations)} Gmail(s):\n{msg}")
 
+# Main function
 def main():
-    keep_alive()  # Start dummy server
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
-    app_bot.add_handler(CommandHandler("start", start))
-    app_bot.add_handler(CommandHandler("help", start))
-    app_bot.add_handler(CallbackQueryHandler(button))
-    app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", start))
+    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+
     print("Bot started successfully!")
-    app_bot.run_polling()
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
