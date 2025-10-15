@@ -29,34 +29,58 @@ def keep_alive():
     t.start()
 
 
-# 🔹 Foreign Name Database
+# 🔹 Foreign Name Database (30 names per country)
 foreign_data = {
     "saudi": [
-        ("Omar", "Al-Farhan"), ("Faisal", "Bin-Hassan"), ("Abdullah", "Al-Mutairi"),
-        ("Yusuf", "Al-Qahtani"), ("Hassan", "Al-Salem"), ("Ali", "Al-Faisal"),
-        ("Khalid", "Al-Rashid"), ("Sultan", "Al-Otaibi"), ("Majed", "Al-Amri"),
-        ("Tariq", "Al-Harbi"), ("Salman", "Al-Zahrani"), ("Ibrahim", "Al-Saadi"),
-        ("Mansour", "Al-Ahmad"), ("Saad", "Al-Dosari"), ("Rashid", "Al-Shammari"),
-        ("Hamad", "Al-Mansour"), ("Anas", "Al-Najjar"), ("Nasser", "Al-Jabri"),
-        ("Turki", "Al-Mutlaq"), ("Waleed", "Al-Khalifa"), ("Badr", "Al-Shehri"),
-        ("Talal", "Al-Subaie"), ("Fahad", "Al-Ruwais"), ("Othman", "Al-Ali"),
-        ("Rayan", "Al-Jaber"), ("Adnan", "Al-Masri"), ("Ziad", "Al-Saif"),
-        ("Sami", "Al-Bakr"), ("Ammar", "Al-Nasser"), ("Imran", "Al-Salem")
+        ("أحمد", "محمد"), ("يوسف", "عبدالله"), ("علي", "سلمان"), ("خالد", "حسن"),
+        ("سعيد", "فهد"), ("إبراهيم", "ماجد"), ("حسن", "ناصر"), ("سلمان", "رامي"),
+        ("طارق", "ناصر"), ("عبدالرحمن", "سعيد"), ("ناصر", "عبدالله"), ("سامي", "فواز"),
+        ("عمر", "حسين"), ("محمد", "أكرم"), ("فهد", "خالد"), ("عبدالله", "مازن"),
+        ("رائد", "سالم"), ("هشام", "علي"), ("مازن", "سلمان"), ("رامي", "أحمد"),
+        ("سيف", "ناصر"), ("بدر", "خالد"), ("أنس", "سعيد"), ("ريان", "فهد"),
+        ("زيد", "سالم"), ("محمود", "طارق"), ("عماد", "سامي"), ("إيهاب", "رامي"),
+        ("فارس", "مازن"), ("زيدان", "أحمد")
     ],
     "ecuador": [
-        ("Carlos", "Vega"), ("Miguel", "Lopez"), ("Juan", "Torres"),
-        ("Diego", "Mendoza"), ("Luis", "Gomez"), ("Andres", "Perez"),
-        ("Jorge", "Cordero"), ("Ricardo", "Ramos"), ("Jose", "Castillo"),
-        ("Pablo", "Moreno"), ("Mateo", "Ortiz"), ("Fernando", "Acosta"),
-        ("Leonardo", "Gallo"), ("Cristian", "Serrano"), ("Mario", "Paredes"),
-        ("Gabriel", "Silva"), ("Daniel", "Torres"), ("Eduardo", "Cruz"),
-        ("Rafael", "Navarro"), ("Francisco", "Arias"), ("Rodrigo", "Bravo"),
-        ("Hugo", "Salinas"), ("Julio", "Valdez"), ("Esteban", "Camacho"),
-        ("Victor", "Rojas"), ("Oscar", "Paz"), ("Mauricio", "Soto"),
-        ("Nicolas", "Reyes"), ("Javier", "Martinez"), ("Adrian", "Molina")
+        ("Carlos", "Vega"), ("Miguel", "Lopez"), ("Juan", "Torres"), ("Diego", "Mendoza"),
+        ("Luis", "Gomez"), ("Andres", "Perez"), ("Jorge", "Cordero"), ("Ricardo", "Ramos"),
+        ("Jose", "Castillo"), ("Pablo", "Moreno"), ("Mateo", "Ortiz"), ("Fernando", "Acosta"),
+        ("Leonardo", "Gallo"), ("Cristian", "Serrano"), ("Mario", "Paredes"), ("Gabriel", "Silva"),
+        ("Daniel", "Torres"), ("Eduardo", "Cruz"), ("Rafael", "Navarro"), ("Francisco", "Arias"),
+        ("Rodrigo", "Bravo"), ("Hugo", "Salinas"), ("Julio", "Valdez"), ("Esteban", "Camacho"),
+        ("Victor", "Rojas"), ("Oscar", "Paz"), ("Mauricio", "Soto"), ("Nicolas", "Reyes"),
+        ("Javier", "Martinez"), ("Adrian", "Molina")
+    ],
+    "sudan": [
+        ("أحمد", "محمد"), ("يوسف", "عبدالله"), ("علي", "حسن"), ("خالد", "سعيد"),
+        ("سلمان", "فهد"), ("إبراهيم", "طارق"), ("حسن", "مازن"), ("سامي", "رامي"),
+        ("فهد", "عبدالله"), ("عبدالرحمن", "سالم"), ("ناصر", "سعيد"), ("طارق", "خالد"),
+        ("مازن", "سامي"), ("رامي", "زيد"), ("سعيد", "أنس"), ("سلمان", "ريان"),
+        ("فواز", "هشام"), ("مازن", "عبدالله"), ("خالد", "سامي"), ("أحمد", "زيدان"),
+        ("رامي", "فهد"), ("سامي", "حسين"), ("زيد", "سلمان"), ("أنس", "رامي"),
+        ("هشام", "مازن"), ("سالم", "أحمد"), ("فهد", "طارق"), ("رامي", "خالد"), ("مازن", "سامي")
+    ],
+    "nicaragua": [
+        ("Juan", "Ramirez"), ("Carlos", "Morales"), ("Luis", "Gomez"), ("Miguel", "Lopez"),
+        ("Diego", "Torres"), ("Andres", "Perez"), ("Jorge", "Ramos"), ("Ricardo", "Castillo"),
+        ("Jose", "Vega"), ("Pablo", "Soto"), ("Mateo", "Ortiz"), ("Fernando", "Navarro"),
+        ("Leonardo", "Acosta"), ("Cristian", "Bravo"), ("Mario", "Silva"), ("Gabriel", "Rojas"),
+        ("Daniel", "Mendoza"), ("Eduardo", "Camacho"), ("Rafael", "Paredes"), ("Francisco", "Reyes"),
+        ("Rodrigo", "Arias"), ("Hugo", "Valdez"), ("Julio", "Martinez"), ("Esteban", "Gallo"),
+        ("Victor", "Serrano"), ("Oscar", "Lopez"), ("Mauricio", "Vega"), ("Nicolas", "Torres"),
+        ("Javier", "Ramos"), ("Adrian", "Cruz")
+    ],
+    "random": [
+        ("Luis", "Fernandez"), ("Diego", "Santos"), ("Miguel", "Cruz"), ("Carlos", "Ramirez"),
+        ("Juan", "Morales"), ("Fernando", "Lopez"), ("Rafael", "Navarro"), ("Jose", "Perez"),
+        ("Mateo", "Gomez"), ("Andres", "Rojas"), ("Gabriel", "Torres"), ("Rodrigo", "Ortiz"),
+        ("Eduardo", "Soto"), ("Pablo", "Silva"), ("Javier", "Valdez"), ("Esteban", "Bravo"),
+        ("Victor", "Mendoza"), ("Ricardo", "Acosta"), ("Hugo", "Gallo"), ("Mario", "Castillo"),
+        ("Cristian", "Serrano"), ("Diego", "Reyes"), ("Luis", "Martinez"), ("Juan", "Perez"),
+        ("Miguel", "Rojas"), ("Carlos", "Ortiz"), ("Jose", "Lopez"), ("Pablo", "Gomez"),
+        ("Mateo", "Ramirez"), ("Fernando", "Torres")
     ]
 }
-
 
 # 🔹 Gmail variation generator
 def generate_gmails(gmail):
@@ -69,6 +93,8 @@ def generate_gmails(gmail):
             break
     return variations
 
+# 🔹 Dictionary to keep user context
+user_context = {}  # user_id: "gmail" or "foreign"
 
 # 🔹 /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -78,13 +104,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "স্বাগতম! আপনি দুটি ফিচার ব্যবহার করতে পারেন:\n\n"
+        "স্বাগতম! দুটি ফিচার ব্যবহার করতে পারেন:\n\n"
         "1️⃣ Gmail Generator\n"
         "2️⃣ Foreign Name\n\n"
         "নিচের বাটন থেকে একটি অপশন বাছাই করুন 👇",
         reply_markup=reply_markup
     )
-
 
 # 🔹 Send long messages safely
 async def send_long_message(chat_id, text, context):
@@ -92,49 +117,62 @@ async def send_long_message(chat_id, text, context):
     for i in range(0, len(text), chunk_size):
         await context.bot.send_message(chat_id, text[i:i+chunk_size])
 
-
-# 🔹 Handle Gmail
-async def handle_gmail(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    gmail = update.message.text.strip()
-    if "@" not in gmail:
-        await update.message.reply_text("⚠️ Invalid Gmail. আবার চেষ্টা করুন।")
-        return
-
-    await update.message.reply_text("⏳ Gmail variations তৈরি হচ্ছে...")
-
-    variations = generate_gmails(gmail)
-    msg = "\n".join(variations)
-    await send_long_message(update.message.chat_id, msg, context)
-    await update.message.reply_text(f"✅ মোট {len(variations)}টি Gmail variation তৈরি হয়েছে!")
-
+# 🔹 Handle Gmail input
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    if user_context.get(user_id) == "gmail":
+        gmail = update.message.text.strip()
+        if "@" not in gmail:
+            await update.message.reply_text("⚠️ Invalid Gmail. আবার চেষ্টা করুন।")
+            return
+        await update.message.reply_text("⏳ Gmail variations তৈরি হচ্ছে...")
+        variations = generate_gmails(gmail)
+        msg = "\n".join(variations)
+        await send_long_message(update.message.chat_id, msg, context)
+        await update.message.reply_text(f"✅ মোট {len(variations)}টি Gmail variation তৈরি হয়েছে!")
+        user_context.pop(user_id)  # reset context
+    else:
+        await update.message.reply_text("⚠️ দয়া করে প্রথমে একটি ফিচার সিলেক্ট করুন।")
 
 # 🔹 Handle callback buttons
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     data = query.data
+    user_id = query.from_user.id
     await query.answer()
 
+    # Gmail Generator
     if data == "gmail_option":
+        user_context[user_id] = "gmail"
         await query.message.reply_text("দয়া করে একটি Gmail পাঠান (উদাহরণ: example@gmail.com)")
 
+    # Foreign Name
     elif data == "foreign_option":
+        user_context[user_id] = "foreign"
         keyboard = [
-            [InlineKeyboardButton("🇸🇦 সৌদি আরব", callback_data="country_saudi")],
-            [InlineKeyboardButton("🇪🇨 ইকুয়েডর", callback_data="country_ecuador")]
+            [InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data="country_saudi")],
+            [InlineKeyboardButton("🇪🇨 Ecuador", callback_data="country_ecuador")],
+            [InlineKeyboardButton("🇸🇩 Sudan", callback_data="country_sudan")],
+            [InlineKeyboardButton("🇳🇮 Nicaragua", callback_data="country_nicaragua")],
+            [InlineKeyboardButton("🌐 Random Country", callback_data="country_random")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.message.reply_text("একটি দেশ নির্বাচন করুন 👇", reply_markup=reply_markup)
 
+    # Show one random name with Change button
     elif data.startswith("country_"):
         country_key = data.split("_")[1]
         names = foreign_data.get(country_key, [])
-        result_text = f"🌍 {country_key.capitalize()} দেশের নামের তালিকা:\n\n"
-        for first, last in names:
-            username = f"@{first.lower()}_{last.lower().replace('-', '')}{random.randint(10,99)}"
-            result_text += f"{first} {last} → {username}\n"
-        await send_long_message(query.message.chat_id, result_text, context)
-        await query.edit_message_text(f"{country_key.capitalize()} দেশের নাম পাঠানো হয়েছে ✅")
-
+        first, last = random.choice(names)
+        username = f"@{first.lower()}_{last.lower().replace('-', '')}{random.randint(10,99)}"
+        keyboard = [
+            [InlineKeyboardButton("🔄 Change", callback_data=f"country_{country_key}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text=f"{first} {last} → {username}",
+            reply_markup=reply_markup
+        )
 
 # 🔹 Main function
 def main():
@@ -143,11 +181,10 @@ def main():
     app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CallbackQueryHandler(button))
-    app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_gmail))
+    app_bot.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_text))
 
     print("✅ Bot started successfully on Render!")
     app_bot.run_polling()
-
 
 if __name__ == "__main__":
     main()
