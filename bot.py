@@ -11,10 +11,9 @@ import random
 # 🔑 তোমার বট টোকেন
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
 
-# Gmail generator limit
-MAX_VARIATIONS = 10000
+MAX_VARIATIONS = 10000  # Gmail generator limit
 
-# 🔹 Dummy Flask server (Render free plan compatible)
+# 🔹 Flask server (Render compatible)
 flask_app = Flask("")
 
 @flask_app.route("/")
@@ -29,16 +28,16 @@ def keep_alive():
     t.start()
 
 
-# 🔹 Foreign Name Database (30 names per country)
+# 🔹 Foreign Name Database
 foreign_data = {
     "saudi": [
         ("أحمد", "محمد"), ("يوسف", "عبدالله"), ("علي", "سلمان"), ("خالد", "حسن"),
         ("سعيد", "فهد"), ("إبراهيم", "ماجد"), ("حسن", "ناصر"), ("سلمان", "رامي"),
         ("طارق", "ناصر"), ("عبدالرحمن", "سعيد"), ("ناصر", "عبدالله"), ("سامي", "فواز"),
         ("عمر", "حسين"), ("محمد", "أكرم"), ("فهد", "خالد"), ("عبدالله", "مازن"),
-        ("رائد", "سالم"), ("هشام", "علي"), ("مازن", "سلمان"), ("رامي", "أحمد"),
+        ("رائد", "سالم"), ("هشام", "علي"), ("مازن", "সلمان"), ("رامي", "أحمد"),
         ("سيف", "ناصر"), ("بدر", "خالد"), ("أنس", "سعيد"), ("ريان", "فهد"),
-        ("زيد", "سالم"), ("محمود", "طارق"), ("عماد", "سامي"), ("إيهاب", "رامي"),
+        ("زيد", "سالم"), ("محمود", "طارق"), ("عماد", "سامي"), ("إيهاب", "رامি"),
         ("فارس", "مازن"), ("زيدان", "أحمد")
     ],
     "ecuador": [
@@ -53,86 +52,78 @@ foreign_data = {
     ],
     "sudan": [
         ("أحمد", "محمد"), ("يوسف", "عبدالله"), ("علي", "حسن"), ("خالد", "سعيد"),
-        ("سلمان", "فهد"), ("إبراهيم", "طارق"), ("حسن", "مازن"), ("سامي", "رامي"),
-        ("فهد", "عبدالله"), ("عبدالرحمن", "سالم"), ("ناصر", "سعيد"), ("طارق", "خالد"),
-        ("مازن", "سامي"), ("رامي", "زيد"), ("سعيد", "أنس"), ("سلمان", "ريان"),
-        ("فواز", "هشام"), ("مازن", "عبدالله"), ("خالد", "سامي"), ("أحمد", "زيدان"),
-        ("رامي", "فهد"), ("سامي", "حسين"), ("زيد", "سلمان"), ("أنس", "رامي"),
-        ("هشام", "مازن"), ("سالم", "أحمد"), ("فهد", "طارق"), ("رامي", "خالد"), ("مازن", "سامي")
-    ],
-    "nicaragua": [
-        ("Juan", "Ramirez"), ("Carlos", "Morales"), ("Luis", "Gomez"), ("Miguel", "Lopez"),
-        ("Diego", "Torres"), ("Andres", "Perez"), ("Jorge", "Ramos"), ("Ricardo", "Castillo"),
-        ("Jose", "Vega"), ("Pablo", "Soto"), ("Mateo", "Ortiz"), ("Fernando", "Navarro"),
-        ("Leonardo", "Acosta"), ("Cristian", "Bravo"), ("Mario", "Silva"), ("Gabriel", "Rojas"),
-        ("Daniel", "Mendoza"), ("Eduardo", "Camacho"), ("Rafael", "Paredes"), ("Francisco", "Reyes"),
-        ("Rodrigo", "Arias"), ("Hugo", "Valdez"), ("Julio", "Martinez"), ("Esteban", "Gallo"),
-        ("Victor", "Serrano"), ("Oscar", "Lopez"), ("Mauricio", "Vega"), ("Nicolas", "Torres"),
-        ("Javier", "Ramos"), ("Adrian", "Cruz")
+        ("سلمان", "فهد"), ("إبراهيم", "طارق"), ("حسن", "مازن"), ("সামী", "রামী"),
+        ("ফাহাদ", "আব্দুল্লাহ"), ("আব্দুর রহমান", "সালেম")
     ],
     "random": [
         ("Luis", "Fernandez"), ("Diego", "Santos"), ("Miguel", "Cruz"), ("Carlos", "Ramirez"),
         ("Juan", "Morales"), ("Fernando", "Lopez"), ("Rafael", "Navarro"), ("Jose", "Perez"),
         ("Mateo", "Gomez"), ("Andres", "Rojas"), ("Gabriel", "Torres"), ("Rodrigo", "Ortiz"),
         ("Eduardo", "Soto"), ("Pablo", "Silva"), ("Javier", "Valdez"), ("Esteban", "Bravo"),
-        ("Victor", "Mendoza"), ("Ricardo", "Acosta"), ("Hugo", "Gallo"), ("Mario", "Castillo"),
-        ("Cristian", "Serrano"), ("Diego", "Reyes"), ("Luis", "Martinez"), ("Juan", "Perez"),
-        ("Miguel", "Rojas"), ("Carlos", "Ortiz"), ("Jose", "Lopez"), ("Pablo", "Gomez"),
-        ("Mateo", "Ramirez"), ("Fernando", "Torres")
+        ("Victor", "Mendoza"), ("Ricardo", "Acosta"), ("Hugo", "Gallo"), ("Mario", "Castillo")
     ]
 }
+
 
 # 🔹 Gmail variation generator
 def generate_gmails(gmail):
     username, domain = gmail.split("@")
     variations = []
-    letters = [c for c in username]
-    for p in product(*[[c.lower(), c.upper()] if c.isalpha() else [c] for c in letters]):
+    for p in product(*[[c.lower(), c.upper()] if c.isalpha() else [c] for c in username]):
         variations.append("".join(p) + "@" + domain)
         if len(variations) >= MAX_VARIATIONS:
             break
     return variations
 
-# 🔹 Dictionary to keep user context
-user_context = {}  # user_id: "gmail" or "foreign"
 
-# 🔹 /start command
+# 🔹 User context
+user_context = {}  # user_id: {"mode": "gmail"/"foreign", "variations": [...], "index": 0}
+
+
+# 🔹 /start command (name mention added)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_name = update.message.from_user.first_name
     keyboard = [
         [InlineKeyboardButton("📧 Gmail Generator", callback_data="gmail_option")],
         [InlineKeyboardButton("🌍 Foreign Name", callback_data="foreign_option")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "স্বাগতম! দুটি ফিচার ব্যবহার করতে পারেন:\n\n"
+        f"স্বাগতম {user_name}! 👋\n\n"
+        "দুটি ফিচার ব্যবহার করতে পারেন:\n\n"
         "1️⃣ Gmail Generator\n"
         "2️⃣ Foreign Name\n\n"
         "নিচের বাটন থেকে একটি অপশন বাছাই করুন 👇",
         reply_markup=reply_markup
     )
 
-# 🔹 Send long messages safely
-async def send_long_message(chat_id, text, context):
-    chunk_size = 4000
-    for i in range(0, len(text), chunk_size):
-        await context.bot.send_message(chat_id, text[i:i+chunk_size])
 
-# 🔹 Handle Gmail input
+# 🔹 Gmail input
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    if user_context.get(user_id) == "gmail":
+    if user_context.get(user_id, {}).get("mode") == "gmail":
         gmail = update.message.text.strip()
         if "@" not in gmail:
             await update.message.reply_text("⚠️ Invalid Gmail. আবার চেষ্টা করুন।")
             return
+
         await update.message.reply_text("⏳ Gmail variations তৈরি হচ্ছে...")
         variations = generate_gmails(gmail)
-        msg = "\n".join(variations)
-        await send_long_message(update.message.chat_id, msg, context)
-        await update.message.reply_text(f"✅ মোট {len(variations)}টি Gmail variation তৈরি হয়েছে!")
-        user_context.pop(user_id)  # reset context
+        user_context[user_id]["variations"] = variations
+        user_context[user_id]["index"] = 0
+
+        keyboard = [[InlineKeyboardButton("📤 Send Gmail", callback_data="send_next")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(
+            f"✅ মোট {len(variations)}টি Gmail variation তৈরি হয়েছে!\n\n"
+            "প্রতিটি Gmail একে একে পেতে নিচের বাটনে চাপ দিন 👇",
+            reply_markup=reply_markup
+        )
+
     else:
         await update.message.reply_text("⚠️ দয়া করে প্রথমে একটি ফিচার সিলেক্ট করুন।")
+
 
 # 🔹 Handle callback buttons
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -143,23 +134,41 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Gmail Generator
     if data == "gmail_option":
-        user_context[user_id] = "gmail"
+        user_context[user_id] = {"mode": "gmail"}
         await query.message.reply_text("দয়া করে একটি Gmail পাঠান (উদাহরণ: example@gmail.com)")
+
+    # Gmail send next
+    elif data == "send_next":
+        user_data = user_context.get(user_id, {})
+        variations = user_data.get("variations", [])
+        index = user_data.get("index", 0)
+
+        if index < len(variations):
+            gmail = variations[index]
+            remaining = len(variations) - index - 1
+            user_context[user_id]["index"] += 1
+
+            keyboard = []
+            if remaining > 0:
+                keyboard = [[InlineKeyboardButton(f"📤 Send Gmail ({remaining} left)", callback_data="send_next")]]
+            reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
+
+            await query.message.reply_text(gmail, reply_markup=reply_markup)
+        else:
+            await query.message.reply_text("✅ সব Gmail variation পাঠানো হয়েছে!")
 
     # Foreign Name
     elif data == "foreign_option":
-        user_context[user_id] = "foreign"
+        user_context[user_id] = {"mode": "foreign"}
         keyboard = [
             [InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data="country_saudi")],
             [InlineKeyboardButton("🇪🇨 Ecuador", callback_data="country_ecuador")],
             [InlineKeyboardButton("🇸🇩 Sudan", callback_data="country_sudan")],
-            [InlineKeyboardButton("🇳🇮 Nicaragua", callback_data="country_nicaragua")],
             [InlineKeyboardButton("🌐 Random Country", callback_data="country_random")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.message.reply_text("একটি দেশ নির্বাচন করুন 👇", reply_markup=reply_markup)
 
-    # Show one random name with Change button
     elif data.startswith("country_"):
         country_key = data.split("_")[1]
         names = foreign_data.get(country_key, [])
@@ -174,10 +183,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup
         )
 
-# 🔹 Main function
-def main():
-    keep_alive()  # Flask server for Render Free Plan
 
+# 🔹 Main
+def main():
+    keep_alive()
     app_bot = ApplicationBuilder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", start))
     app_bot.add_handler(CallbackQueryHandler(button))
@@ -185,6 +194,7 @@ def main():
 
     print("✅ Bot started successfully on Render!")
     app_bot.run_polling()
+
 
 if __name__ == "__main__":
     main()
