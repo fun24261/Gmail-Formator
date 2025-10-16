@@ -175,169 +175,166 @@ foreign_data = {
         ("Oscar", "Reyes", "@oscar_reyes134"),
         ("Manuel", "Lozano", "@manuel_lozano135"),
         ("Francisco", "Romero", "@francisco_romero136"),
-        ("Andres", "Navarro", "@andres_navarro137"),
-        ("Pedro", "Mora", "@pedro_mora138"),
-        ("Javier", "Vasquez", "@javier_vasquez139"),
-        ("Luis", "Morales", "@luis_morales140"),
-        ("Diego", "Pinto", "@diego_pinto141"),
-        ("Miguel", "Salinas", "@miguel_salinas142"),
-        ("Carlos", "Cordero", "@carlos_cordero143"),
-        ("Jorge", "Fuentes", "@jorge_fuentes144"),
-        ("Eduardo", "Lopez", "@eduardo_lopez145"),
-        ("Fernando", "Mendoza", "@fernando_mendoza146"),
-        ("Alberto", "Garcia", "@alberto_garcia147"),
-        ("Rafael", "Vargas", "@rafael_vargas148"),
-        ("Sergio", "Ortega", "@sergio_ortega149"),
-        ("Martin", "Diaz", "@martin_diaz150"),
-        ("Joaquin", "Castro", "@joaquin_castro151"),
-        ("Ricardo", "Salazar", "@ricardo_salazar152"),
-        ("Victor", "Perez", "@victor_perez153"),
-        ("Oscar", "Fuentes", "@oscar_fuentes154"),
-        ("Manuel", "Reyes", "@manuel_reyes155"),
-        ("Francisco", "Lozano", "@francisco_lozano156"),
-        ("Andres", "Romero", "@andres_romero157"),
-        ("Pedro", "Navarro", "@pedro_navarro158"),
-    ]
+        ("Andres", "Mora", "@andres_mora137"),
+        ("Pedro", "Navarro", "@pedro_navarro138"),
+        ("Luis", "Gutierrez", "@luis_gutierrez139"),
+        ("Diego", "Paredes", "@diego_paredes140"),
+        ("Miguel", "Ortiz", "@miguel_ortiz141"),
+        ("Carlos", "Silva", "@carlos_silva142"),
+        ("Jorge", "Garcia", "@jorge_garcia143"),
+        ("Eduardo", "Salinas", "@eduardo_salinas144"),
+        ("Fernando", "Cordero", "@fernando_cordero145"),
+        ("Alberto", "Lozano", "@alberto_lozano146"),
+        ("Rafael", "Vega", "@rafael_vega147"),
+        ("Sergio", "Pinto", "@sergio_pinto148"),
+        ("Martin", "Morales", "@martin_morales149"),
+        ("Joaquin", "Vasquez", "@joaquin_vasquez150"),
+        ("Ricardo", "Diaz", "@ricardo_diaz151"),
+        ("Victor", "Santos", "@victor_santos152"),
+        ("Oscar", "Perez", "@oscar_perez153"),
+        ("Manuel", "Fuentes", "@manuel_fuentes154"),
+        ("Francisco", "Reyes", "@francisco_reyes155"),
+        ("Andres", "Lozano", "@andres_lozano156"),
+        ("Pedro", "Romero", "@pedro_romero157"),
+    ],
 }
 
+# User Context Dictionary: user_id -> {"mode": "gmail"/"foreign", "country": "saudi"/etc, "index": 0, "gmail_parts": [..]}
+user_context = {}
 
-# ✅ Gmail variation generator
-def generate_gmails(gmail: str):
-    username, domain = gmail.split("@", 1)
-    variations = []
-    pattern = [[c.lower(), c.upper()] if c.isalpha() else [c] for c in username]
-    for p in product(*pattern):
-        variations.append("".join(p) + "@" + domain)
-        if len(variations) >= MAX_VARIATIONS:
-            break
-    return variations
+# Generate Gmail variations function
+def generate_gmail_variations(name_parts):
+    """
+    Generates up to MAX_VARIATIONS Gmail variations by joining name parts with dots.
+    """
+    parts = name_parts.copy()
+    # Generate all possible combinations with dots or no dots
+    all_combinations = set()
 
+    # We consider dot or no dot between every part (except the last)
+    # Example for 3 parts: parts = [p1, p2, p3]
+    # possibilities: p1p2p3, p1.p2p3, p1p2.p3, p1.p2.p3
+    def backtrack(idx, current):
+        if idx == len(parts):
+            all_combinations.add("".join(current))
+            return
+        # Append without dot (except if idx == 0)
+        if idx > 0:
+            current.append(parts[idx])
+            backtrack(idx + 1, current)
+            current.pop()
+            current.append("." + parts[idx])
+            backtrack(idx + 1, current)
+            current.pop()
+        else:
+            current.append(parts[idx])
+            backtrack(idx + 1, current)
+            current.pop()
 
-# ✅ In-memory user context
-user_context = {}  # user_id: {"mode": "gmail"/"foreign", "variations": [...], "index": int}
+    backtrack(0, [])
+    result = list(all_combinations)[:MAX_VARIATIONS]
+    return result
 
+# Telegram Bot Handlers
 
-# ✅ /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
-    user_name = update.message.from_user.first_name
-
-    keyboard = [
-        [InlineKeyboardButton("📧 Gmail Generator", callback_data="gmail_option")],
-        [InlineKeyboardButton("🌍 Foreign Name", callback_data="foreign_option")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    welcome = (
-        f"স্বাগতম {user_name}! 👋\n\n"
-        "দুটি ফিচার ব্যবহার করতে পারেন:\n"
-        "1️⃣ Gmail Generator\n"
-        "2️⃣ Foreign Name\n\n"
-        "নিচের বাটন থেকে একটি অপশন বাছাই করুন:"
+    text = (
+        "Welcome! Choose one option:\n"
+        "1. Generate Gmail Variations\n"
+        "2. Foreign Names\n\n"
+        "Send /gmail to start Gmail variation.\n"
+        "Send /foreign to see Foreign names."
     )
+    await update.message.reply_text(text)
 
-    # Info message if old gmail exists
-    if user_id in user_context and user_context[user_id].get("variations"):
-        welcome += "\n\n⚠️ আপনি আগে Gmail variation তৈরি করেছিলেন। Send Gmail চাপলে সেগুলো আবার দেখতে পাবেন। নতুন Gmail দিলে আগেরটা মুছে যাবে।"
-
-    await update.message.reply_text(welcome, reply_markup=reply_markup)
-
-
-# ✅ Gmail input handler
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def gmail_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    user_data = user_context.get(user_id, {})
+    user_context[user_id] = {"mode": "gmail"}
+    await update.message.reply_text("Send me your full name (first, middle, last) separated by spaces:")
 
-    if user_data.get("mode") == "gmail":
-        gmail = update.message.text.strip()
-        if "@" not in gmail:
-            await update.message.reply_text("⚠️ সঠিক Gmail দিন (উদাহরণ: example@gmail.com)")
+async def foreign_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    user_context[user_id] = {"mode": "foreign"}
+    # Show country options as buttons
+    buttons = [
+        [InlineKeyboardButton("Saudi 🇸🇦", callback_data="country_saudi"),
+         InlineKeyboardButton("Sudan 🇸🇩", callback_data="country_sudan")],
+        [InlineKeyboardButton("Ecuador 🇪🇨", callback_data="country_ecuador"),
+         InlineKeyboardButton("Random", callback_data="country_random")],
+    ]
+    await update.message.reply_text("Choose a country:", reply_markup=InlineKeyboardMarkup(buttons))
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    text = update.message.text.strip()
+    ctx = user_context.get(user_id, {})
+
+    if ctx.get("mode") == "gmail":
+        # Split name parts
+        parts = text.split()
+        if len(parts) < 2:
+            await update.message.reply_text("Please send at least two name parts.")
             return
 
-        await update.message.reply_text("⏳ Gmail variations তৈরি হচ্ছে...")
-
-        variations = generate_gmails(gmail)
-        user_context[user_id]["variations"] = variations
-        user_context[user_id]["index"] = 0
-
-        keyboard = [[InlineKeyboardButton("📤 Send Gmail", callback_data="send_next")]]
-        await update.message.reply_text(
-            f"✅ {len(variations)} টি Gmail variation তৈরি হয়েছে!\n"
-            "Send Gmail বাটনে চাপ দিন পেতে থাকুন 👇",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        # Save parts for generating variations
+        user_context[user_id]["gmail_parts"] = parts
+        variations = generate_gmail_variations(parts)
+        variations_text = "\n".join(variations[:20])  # Show first 20 only for brevity
+        await update.message.reply_text(f"Here are some Gmail variations:\n{variations_text}\n\nSend /gmail again to try new name.")
+    
     else:
-        await update.message.reply_text("⚠️ আগে Gmail Generator অপশন বাছাই করুন।")
+        await update.message.reply_text("Please choose /gmail or /foreign first.")
 
-
-# ✅ Callback button handler
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    data = query.data
-    user_id = query.from_user.id
     await query.answer()
+    user_id = query.from_user.id
+    data = query.data
+    ctx = user_context.get(user_id, {})
 
-    if data == "gmail_option":
-        if user_id not in user_context:
-            user_context[user_id] = {}
-        user_context[user_id]["mode"] = "gmail"
-        await query.message.reply_text("✉️ একটি Gmail পাঠান (যেমন: test@gmail.com)")
-
-    elif data == "send_next":
-        user_data = user_context.get(user_id, {})
-        variations = user_data.get("variations", [])
-        index = user_data.get("index", 0)
-
-        if index < len(variations):
-            gmail = variations[index]
-            remaining = len(variations) - index - 1
-            user_context[user_id]["index"] += 1
-
-            keyboard = []
-            if remaining > 0:
-                keyboard = [[InlineKeyboardButton(f"📤 আরও ({remaining} বাকি)", callback_data="send_next")]]
-            await query.message.reply_text(gmail, reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None)
-        else:
-            await query.message.reply_text("✅ সব Gmail variation পাঠানো হয়েছে!")
-
-    elif data == "foreign_option":
-        user_context[user_id] = {"mode": "foreign"}
-        keyboard = [
-            [InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data="country_saudi")],
-            [InlineKeyboardButton("🇪🇨 Ecuador", callback_data="country_ecuador")],
-            [InlineKeyboardButton("🇸🇩 Sudan", callback_data="country_sudan")],
-            [InlineKeyboardButton("🌐 Random Country", callback_data="country_random")]
-        ]
-        await query.message.reply_text("একটি দেশ নির্বাচন করুন 👇", reply_markup=InlineKeyboardMarkup(keyboard))
-
-    elif data.startswith("country_"):
+    # Handle country selection or "Change" in foreign mode
+    if data.startswith("country_"):
         country = data.split("_")[1]
         names = foreign_data.get(country, [])
+
         if not names:
-            await query.message.reply_text("এই দেশের ডেটা নেই।")
+            await query.message.reply_text("No data found for this country.")
             return
 
-        first_name, last_name, tg_username = random.choice(names)
+        # Initialize or update index for this user and country
+        if ctx.get("mode") != "foreign" or ctx.get("country") != country:
+            user_context[user_id] = {"mode": "foreign", "country": country, "index": 0}
+        else:
+            current_index = ctx.get("index", 0)
+            next_index = (current_index + 1) % len(names)
+            user_context[user_id]["index"] = next_index
+
+        index = user_context[user_id]["index"]
+        first_name, last_name, tg_username = names[index]
 
         keyboard = [[InlineKeyboardButton("🔄 Change", callback_data=f"country_{country}")]]
         await query.edit_message_text(
-            text=f"{first_name} {last_name} → {tg_username}",
+            text=f"{first_name} {last_name} → {tg_username}\n\n[{index+1}/{len(names)}]",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
+    else:
+        await query.message.reply_text("Unknown command.")
 
-# ✅ Main function
+# Main function to start bot and flask server
 def main():
     keep_alive()
+
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
-    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(CommandHandler("gmail", gmail_command))
+    app.add_handler(CommandHandler("foreign", foreign_command))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(CallbackQueryHandler(callback_query_handler))
 
     print("Bot started...")
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
