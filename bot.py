@@ -300,6 +300,8 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     user_id = query.from_user.id
     data = query.data
 
+    print(f"Callback received: {data} from user: {user_id}")  # Debug line
+
     # Handle Main Menu
     if data == "main_menu":
         await show_main_menu(update, context)
@@ -323,7 +325,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     # Handle Gmail sending
     elif data == "send_gmail":
         if user_id not in user_gmail_data or not user_gmail_data[user_id]["variations"]:
-            await query.message.reply_text("No Gmail variations found. Please send your Gmail address first.")
+            await query.edit_message_text("No Gmail variations found. Please send your Gmail address first.")
             return
         
         variations = user_gmail_data[user_id]["variations"]
@@ -350,13 +352,15 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                 ]
                 
                 try:
-                    await query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
-                except:
-                    # If message can't be edited, send new one
-                    pass
+                    await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
+                except Exception as e:
+                    print(f"Error editing markup: {e}")
             else:
                 # All variations sent
-                await query.message.edit_reply_markup(reply_markup=None)
+                try:
+                    await query.edit_message_reply_markup(reply_markup=None)
+                except:
+                    pass
                 await context.bot.send_message(
                     chat_id=query.message.chat_id,
                     text="✅ **All Gmail variations have been sent!**\n\nUse the buttons below to generate new variations:",
@@ -367,20 +371,17 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                     parse_mode='Markdown'
                 )
     
-    # Handle country selection for foreign names
+    # Handle country selection for foreign names - FIXED THIS PART
     elif data.startswith("country_"):
         country = data.split("_")[1]
         names = foreign_data.get(country, [])
 
         if not names:
-            await query.message.reply_text("No data found for this country.")
+            await query.edit_message_text("No data found for this country.")
             return
 
-        if user_id not in user_foreign_data:
-            user_foreign_data[user_id] = {"country": country, "current_index": 0}
-        else:
-            user_foreign_data[user_id]["country"] = country
-            user_foreign_data[user_id]["current_index"] = 0
+        # Initialize user foreign data
+        user_foreign_data[user_id] = {"country": country, "current_index": 0}
 
         current_index = user_foreign_data[user_id]["current_index"]
         first_name, last_name, tg_username = names[current_index]
@@ -393,8 +394,8 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
 
         keyboard = [
             [InlineKeyboardButton("🔄 Next Name", callback_data="change_foreign")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_foreign"),
-             InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+            [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
         ]
         
         await query.edit_message_text(
@@ -409,14 +410,14 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     # Handle changing foreign names
     elif data == "change_foreign":
         if user_id not in user_foreign_data:
-            await query.message.reply_text("Please select a country first.")
+            await query.edit_message_text("Please select a country first.")
             return
         
         country = user_foreign_data[user_id]["country"]
         names = foreign_data.get(country, [])
         
         if not names:
-            await query.message.reply_text("No data found for this country.")
+            await query.edit_message_text("No data found for this country.")
             return
         
         current_index = user_foreign_data[user_id]["current_index"]
@@ -433,8 +434,8 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         
         keyboard = [
             [InlineKeyboardButton("🔄 Next Name", callback_data="change_foreign")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_foreign"),
-             InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+            [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
         ]
         
         await query.edit_message_text(
@@ -456,7 +457,7 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
-    print("Bot started with complete features...")
+    print("Bot started with fixed Foreign Names feature...")
     app.run_polling()
 
 if __name__ == "__main__":
