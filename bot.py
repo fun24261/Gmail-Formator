@@ -6,12 +6,15 @@ from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
+# ✅ এই লাইব্রেরিটি ইম্পোর্ট করা হলো MessageNotModifiedError হ্যান্ডেল করতে
+from telegram.error import MessageNotModified
+import asyncio
 
 # ✅ Telegram Bot Token
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
 
 # ✅ Flask app for Render
-flask_app = Flask(__name__)
+flask_app = Flask(_name_)
 
 @flask_app.route("/")
 def home():
@@ -33,6 +36,11 @@ foreign_data = {
         ("علي", "سلمان", "@ali_salman03"),
         ("خالد", "حسن", "@khaled_hassan04"),
         ("سعيد", "فهد", "@saeed_fahad05"),
+        ("إبراهيم", "ماجد", "@ibrahim_majed06"),
+        ("حسن", "ناصر", "@hasan_nasser07"),
+        ("سلمان", "رامي", "@salman_rami08"),
+        ("فهد", "خالد", "@fahad_khaled09"),
+        ("ناصر", "سعيد", "@nasser_saeed10"),
     ],
     "ecuador": [
         ("Carlos", "Vega", "@carlos_vega01"),
@@ -40,6 +48,11 @@ foreign_data = {
         ("Juan", "Torres", "@juan_torres03"),
         ("Diego", "Mendoza", "@diego_mendoza04"),
         ("Luis", "Fernandez", "@luis_fernandez05"),
+        ("Pedro", "Martinez", "@pedro_martinez06"),
+        ("Jorge", "Rojas", "@jorge_rojas07"),
+        ("Andres", "Gomez", "@andres_gomez08"),
+        ("Ricardo", "Castro", "@ricardo_castro09"),
+        ("Francisco", "Salazar", "@francisco_salazar10"),
     ],
     "random": [
         ("Luis", "Fernandez", "@luis_fernandez31"),
@@ -47,6 +60,11 @@ foreign_data = {
         ("Miguel", "Cruz", "@miguel_cruz33"),
         ("Carlos", "Ramirez", "@carlos_ramirez34"),
         ("Jorge", "Lopez", "@jorge_lopez35"),
+        ("Eduardo", "Mendoza", "@eduardo_mendoza36"),
+        ("Fernando", "Garcia", "@fernando_garcia37"),
+        ("Alberto", "Vargas", "@alberto_vargas38"),
+        ("Rafael", "Ortega", "@rafael_ortega39"),
+        ("Sergio", "Diaz", "@sergio_diaz40"),
     ]
 }
 
@@ -54,13 +72,13 @@ foreign_data = {
 user_gmail_data = {}
 user_foreign_data = {}
 
-# Generate case variations for Gmail username
+# Generate ALL possible case variations for Gmail username
 def generate_case_variations(username):
     variations = set()
     username_lower = username.lower()
     
-    # Generate limited case combinations for speed
-    for i in range(min(2 ** len(username_lower), 100)):
+    # এটি 2^N ভ্যারিয়েশন তৈরি করে, যা বড় ইউজারনেমের জন্য খুব বেশি হতে পারে।
+    for i in range(2 ** len(username_lower)):
         variation = []
         for j, char in enumerate(username_lower):
             if (i >> j) & 1:
@@ -71,8 +89,7 @@ def generate_case_variations(username):
     
     return list(variations)
 
-# Telegram Bot Handlers
-
+# Fast button handlers - no delays
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     user_name = user.first_name
@@ -82,8 +99,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
     ]
     
-    text = f"Hello {user_name}! 👋 Welcome!\n\nPlease choose a service:"
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    await update.message.reply_text(
+        f"Hello {user_name}! 👋\nChoose service:", 
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -94,7 +113,7 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
     ]
     
-    await query.edit_message_text("🏠 Main Menu - Choose service:", reply_markup=InlineKeyboardMarkup(keyboard))
+    await query.edit_message_text("🏠 Main Menu", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def main_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -102,12 +121,10 @@ async def main_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     user_id = query.from_user.id
     
-    # Check if user has existing Gmail data
     if user_id in user_gmail_data and user_gmail_data[user_id]["variations"]:
         variations = user_gmail_data[user_id]["variations"]
         current_index = user_gmail_data[user_id]["current_index"]
-        total_count = len(variations)
-        remaining = total_count - current_index
+        remaining = len(variations) - current_index
         
         if remaining > 0:
             keyboard = [
@@ -115,22 +132,27 @@ async def main_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 [InlineKeyboardButton("🔄 New Gmail", callback_data="new_gmail")],
                 [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
             ]
-            
-            text = f"📧 Gmail Generator\n\nYou have {remaining} variations remaining.\nClick 'Send Gmail' to continue."
-            await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+            await query.edit_message_text(
+                f"📧 Gmail Generator\n{remaining} variations remaining", 
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
             return
     
-    text = "📧 Gmail Generator\n\nSend your Gmail address:\nExample: john.doe@gmail.com"
     keyboard = [[InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]]
-    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    await query.edit_message_text(
+        "📧 Gmail Generator\nSend your Gmail address:", 
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 async def new_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
-    text = "📧 New Gmail\n\nSend your Gmail address:\nExample: john.doe@gmail.com"
     keyboard = [[InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]]
-    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    await query.edit_message_text(
+        "📧 New Gmail\nSend your Gmail address:", 
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 async def main_foreign_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -143,13 +165,12 @@ async def main_foreign_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
     ]
     
-    await query.edit_message_text("🌍 Foreign Names\nChoose country:", reply_markup=InlineKeyboardMarkup(buttons))
+    await query.edit_message_text("🌍 Foreign Names", reply_markup=InlineKeyboardMarkup(buttons))
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     text = update.message.text.strip()
 
-    # Check if it's a Gmail address
     if text and not text.startswith('/') and '@gmail.com' in text:
         username = text.split('@')[0].strip()
         
@@ -160,7 +181,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Generate variations
         variations = generate_case_variations(username)
         
-        # Store in global storage
         user_gmail_data[user_id] = {
             "variations": variations,
             "current_index": 0
@@ -174,7 +194,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         
         await update.message.reply_text(
-            f"✅ Generated {total_count} variations!\nClick below to receive:",
+            f"✅ Generated {total_count} variations!", 
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
     
@@ -193,8 +213,6 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     await query.answer()
     user_id = query.from_user.id
     data = query.data
-
-    print(f"DEBUG: Received callback data: {data}")  # Debug line
 
     try:
         if data == "main_menu":
@@ -219,6 +237,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             
             if current_index < len(variations):
                 variation = variations[current_index]
+                # নতুন মেসেজ হিসেবে পাঠানো হচ্ছে
                 await context.bot.send_message(
                     chat_id=query.message.chat_id,
                     text=f"{variation}@gmail.com"
@@ -232,61 +251,81 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                         [InlineKeyboardButton(f"📧 Send Gmail ({remaining} left)", callback_data="send_gmail")],
                         [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
                     ]
-                    await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
+                    # ✅ MessageNotModifiedError এড়ানো
+                    try:
+                        await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
+                    except MessageNotModified:
+                        pass # যদি রিপ্লাই মার্কআপ একই থাকে তবে উপেক্ষা করা হবে
                 else:
                     await query.edit_message_text("✅ All variations sent!")
+                    # সবগুলো ভ্যারিয়েশন পাঠানো হলে ইনডেক্স রিসেট করা
                     user_gmail_data[user_id]["current_index"] = 0
         
-        # ✅ FIXED: Country selection - SIMPLE AND DIRECT
-        elif data in ["saudi", "ecuador", "random"]:
-            print(f"DEBUG: Country selected: {data}")  # Debug
-            country = data
-            names = foreign_data.get(country, [])
-            
-            if not names:
-                await query.edit_message_text("❌ No data found for this country.")
-                return
-            
-            # Store user data
-            user_foreign_data[user_id] = {
-                "country": country,
-                "current_index": 0
-            }
-            
-            # Show first name
+        # ✅ FAST COUNTRY HANDLERS
+        elif data == "saudi":
+            names = foreign_data["saudi"]
             first_name, last_name, tg_username = names[0]
-            
-            country_names = {
-                "saudi": "🇸🇦 Saudi Arabia",
-                "ecuador": "🇪🇨 Ecuador", 
-                "random": "🌍 Random Names"
-            }
+            user_foreign_data[user_id] = {"country": "saudi", "current_index": 0}
             
             keyboard = [
                 [InlineKeyboardButton("🔄 Next Name", callback_data="next_foreign")],
-                [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign")],
+                [InlineKeyboardButton("🔙 Back", callback_data="main_foreign")],
             ]
             
             await query.edit_message_text(
-                f"**{country_names[country]}**\n\n"
-                f"👤 **Name:** {first_name} {last_name}\n"
-                f"📱 **Telegram:** {tg_username}\n\n"
-                f"📊 **1/{len(names)}**",
+                f"**🇸🇦 Saudi Arabia**\n\n"
+                f"👤 {first_name} {last_name}\n"
+                f"📱 {tg_username}\n\n"
+                f"1/{len(names)}",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+        
+        elif data == "ecuador":
+            names = foreign_data["ecuador"]
+            first_name, last_name, tg_username = names[0]
+            user_foreign_data[user_id] = {"country": "ecuador", "current_index": 0}
+            
+            keyboard = [
+                [InlineKeyboardButton("🔄 Next Name", callback_data="next_foreign")],
+                [InlineKeyboardButton("🔙 Back", callback_data="main_foreign")],
+            ]
+            
+            await query.edit_message_text(
+                f"**🇪🇨 Ecuador**\n\n"
+                f"👤 {first_name} {last_name}\n"
+                f"📱 {tg_username}\n\n"
+                f"1/{len(names)}",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+        
+        elif data == "random":
+            names = foreign_data["random"]
+            first_name, last_name, tg_username = names[0]
+            user_foreign_data[user_id] = {"country": "random", "current_index": 0}
+            
+            keyboard = [
+                [InlineKeyboardButton("🔄 Next Name", callback_data="next_foreign")],
+                [InlineKeyboardButton("🔙 Back", callback_data="main_foreign")],
+            ]
+            
+            await query.edit_message_text(
+                f"**🌍 Random Names**\n\n"
+                f"👤 {first_name} {last_name}\n"
+                f"📱 {tg_username}\n\n"
+                f"1/{len(names)}",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
         
         elif data == "next_foreign":
             if user_id not in user_foreign_data:
-                await query.edit_message_text("❌ Please select a country first.")
+                await query.edit_message_text("Please select country first.")
                 return
             
             country = user_foreign_data[user_id]["country"]
-            names = foreign_data.get(country, [])
-            
-            if not names:
-                await query.edit_message_text("❌ No data found.")
-                return
+            names = foreign_data[country]
             
             current_index = user_foreign_data[user_id]["current_index"]
             next_index = (current_index + 1) % len(names)
@@ -294,41 +333,48 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             
             first_name, last_name, tg_username = names[next_index]
             
-            country_names = {
-                "saudi": "🇸🇦 Saudi Arabia",
-                "ecuador": "🇪🇨 Ecuador",
-                "random": "🌍 Random Names"
-            }
+            country_names = {"saudi": "🇸🇦 Saudi Arabia", "ecuador": "🇪🇨 Ecuador", "random": "🌍 Random Names"}
             
             keyboard = [
                 [InlineKeyboardButton("🔄 Next Name", callback_data="next_foreign")],
-                [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign")],
+                [InlineKeyboardButton("🔙 Back", callback_data="main_foreign")],
             ]
             
-            await query.edit_message_text(
-                f"**{country_names[country]}**\n\n"
-                f"👤 **Name:** {first_name} {last_name}\n"
-                f"📱 **Telegram:** {tg_username}\n\n"
-                f"📊 **{next_index+1}/{len(names)}**",
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode='Markdown'
-            )
+            # ✅ MessageNotModifiedError এড়ানো
+            try:
+                await query.edit_message_text(
+                    f"**{country_names[country]}**\n\n"
+                    f"👤 {first_name} {last_name}\n"
+                    f"📱 {tg_username}\n\n"
+                    f"{next_index+1}/{len(names)}",
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+            except MessageNotModified:
+                pass # যদি মেসেজের টেক্সট বা মার্কআপ একই থাকে তবে উপেক্ষা করা হবে
             
+    # ✅ MessageNotModifiedError কে আলাদাভাবে হ্যান্ডেল করা হলো
+    except MessageNotModified:
+        # এটি প্রায়ই ঘটে যখন দ্রুত ক্লিক করা হয়, ইউজারকে কোনো বার্তা না দেখিয়ে এড়িয়ে যাওয়া যেতে পারে।
+        pass
     except Exception as e:
-        print(f"❌ Error in callback: {e}")
-        await query.edit_message_text("❌ Error occurred. Please try /start again.")
+        # অন্য কোনো গুরুত্বপূর্ণ ত্রুটি হলে ইউজারকে জানানো
+        await query.edit_message_text("❌ An error occurred. Please try /start again.")
 
-# Main function
+# Main function - optimized for Render
 def main():
     keep_alive()
+    
+    # Fast bot configuration
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     
+    # Add handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     
-    print("🚀 Bot started - FOREIGN NAMES FIXED VERSION")
-    app.run_polling()
+    print("🚀 FAST BOT STARTED - OPTIMIZED FOR RENDER")
+    app.run_polling(drop_pending_updates=True)  # Faster startup
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
