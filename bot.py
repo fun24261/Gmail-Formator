@@ -6,15 +6,13 @@ from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
-# ✅ এই লাইব্রেরিটি ইম্পোর্ট করা হলো MessageNotModifiedError হ্যান্ডেল করতে
-from telegram.error import MessageNotModified
 import asyncio
 
 # ✅ Telegram Bot Token
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
 
 # ✅ Flask app for Render
-flask_app = Flask(_name_)
+flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
@@ -77,7 +75,6 @@ def generate_case_variations(username):
     variations = set()
     username_lower = username.lower()
     
-    # এটি 2^N ভ্যারিয়েশন তৈরি করে, যা বড় ইউজারনেমের জন্য খুব বেশি হতে পারে।
     for i in range(2 ** len(username_lower)):
         variation = []
         for j, char in enumerate(username_lower):
@@ -237,7 +234,6 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             
             if current_index < len(variations):
                 variation = variations[current_index]
-                # নতুন মেসেজ হিসেবে পাঠানো হচ্ছে
                 await context.bot.send_message(
                     chat_id=query.message.chat_id,
                     text=f"{variation}@gmail.com"
@@ -251,14 +247,9 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                         [InlineKeyboardButton(f"📧 Send Gmail ({remaining} left)", callback_data="send_gmail")],
                         [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
                     ]
-                    # ✅ MessageNotModifiedError এড়ানো
-                    try:
-                        await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
-                    except MessageNotModified:
-                        pass # যদি রিপ্লাই মার্কআপ একই থাকে তবে উপেক্ষা করা হবে
+                    await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
                 else:
                     await query.edit_message_text("✅ All variations sent!")
-                    # সবগুলো ভ্যারিয়েশন পাঠানো হলে ইনডেক্স রিসেট করা
                     user_gmail_data[user_id]["current_index"] = 0
         
         # ✅ FAST COUNTRY HANDLERS
@@ -340,26 +331,17 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                 [InlineKeyboardButton("🔙 Back", callback_data="main_foreign")],
             ]
             
-            # ✅ MessageNotModifiedError এড়ানো
-            try:
-                await query.edit_message_text(
-                    f"**{country_names[country]}**\n\n"
-                    f"👤 {first_name} {last_name}\n"
-                    f"📱 {tg_username}\n\n"
-                    f"{next_index+1}/{len(names)}",
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
-            except MessageNotModified:
-                pass # যদি মেসেজের টেক্সট বা মার্কআপ একই থাকে তবে উপেক্ষা করা হবে
+            await query.edit_message_text(
+                f"**{country_names[country]}**\n\n"
+                f"👤 {first_name} {last_name}\n"
+                f"📱 {tg_username}\n\n"
+                f"{next_index+1}/{len(names)}",
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
             
-    # ✅ MessageNotModifiedError কে আলাদাভাবে হ্যান্ডেল করা হলো
-    except MessageNotModified:
-        # এটি প্রায়ই ঘটে যখন দ্রুত ক্লিক করা হয়, ইউজারকে কোনো বার্তা না দেখিয়ে এড়িয়ে যাওয়া যেতে পারে।
-        pass
     except Exception as e:
-        # অন্য কোনো গুরুত্বপূর্ণ ত্রুটি হলে ইউজারকে জানানো
-        await query.edit_message_text("❌ An error occurred. Please try /start again.")
+        await query.edit_message_text("Error occurred. Please try /start again.")
 
 # Main function - optimized for Render
 def main():
@@ -376,5 +358,5 @@ def main():
     print("🚀 FAST BOT STARTED - OPTIMIZED FOR RENDER")
     app.run_polling(drop_pending_updates=True)  # Faster startup
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
