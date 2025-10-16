@@ -6,13 +6,9 @@ from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
-import random
 
 # ✅ Telegram Bot Token
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
-
-# ✅ Max Gmail Variations
-MAX_VARIATIONS = 10000
 
 # ✅ Flask app for Render
 flask_app = Flask(__name__)
@@ -29,7 +25,7 @@ def keep_alive():
     t.daemon = True
     t.start()
 
-# ✅ Foreign Names with Telegram usernames (40 people each country)
+# ✅ Foreign Names with Telegram usernames (30 each)
 foreign_data = {
     "saudi": [
         ("أحمد", "محمد", "@ahmad_mohamed01"),
@@ -61,169 +57,94 @@ foreign_data = {
         ("رامي", "إبراهيم", "@rami_ibrahim27"),
         ("ماجد", "سعيد", "@majed_saeed28"),
         ("خالد", "علي", "@khaled_ali29"),
-        ("فهد", "أحمد", "@fahad_ahmad30"),
-        ("إبراهيم", "محمد", "@ibrahim_mohamed31"),
-        ("سلمان", "عبدالله", "@salman_abdullah32"),
-        ("حسن", "يوسف", "@hasan_yousef33"),
-        ("سعيد", "علي", "@saeed_ali34"),
-        ("طارق", "خالد", "@tariq_khaled35"),
-        ("يوسف", "سلمان", "@yousef_salman36"),
-        ("محمد", "حسن", "@mohamed_hasan37"),
-        ("علي", "رامي", "@ali_rami38"),
-        ("خالد", "ماجد", "@khaled_majed39"),
-        ("فهد", "إبراهيم", "@fahad_ibrahim40"),
-    ],
-    "sudan": [
-        ("أحمد", "محمد", "@ahmad_mohamed41"),
-        ("يوسف", "عبدالله", "@yousef_abdullah42"),
-        ("علي", "حسن", "@ali_hassan43"),
-        ("خالد", "سعيد", "@khaled_saeed44"),
-        ("سلمان", "فهد", "@salman_fahad45"),
-        ("إبراهيم", "طارق", "@ibrahim_tariq46"),
-        ("حسن", "مازن", "@hasan_mazen47"),
-        ("سامي", "رامي", "@sami_rami48"),
-        ("فهد", "أحمد", "@fahad_ahmad49"),
-        ("سعيد", "خالد", "@saeed_khaled50"),
-        ("طارق", "حسن", "@tariq_hasan51"),
-        ("مازن", "يوسف", "@mazen_yousef52"),
-        ("رامي", "سلمان", "@rami_salman53"),
-        ("أحمد", "سامي", "@ahmad_sami54"),
-        ("محمد", "طارق", "@mohamed_tariq55"),
-        ("يوسف", "مازن", "@yousef_mazen56"),
-        ("خالد", "رامي", "@khaled_rami57"),
-        ("سلمان", "سعيد", "@salman_saeed58"),
-        ("فهد", "إبراهيم", "@fahad_ibrahim59"),
-        ("حسن", "سامي", "@hasan_sami60"),
-        ("رامي", "مازন", "@rami_mazen61"),
-        ("طارق", "سلمان", "@tariq_salman62"),
-        ("مازن", "خالد", "@mazen_khaled63"),
-        ("سامي", "فهد", "@sami_fahad64"),
-        ("أحمد", "حسن", "@ahmad_hasan65"),
-        ("محمد", "رامي", "@mohamed_rami66"),
-        ("يوسف", "سامي", "@yousef_sami67"),
-        ("خالد", "مازن", "@khaled_mazen68"),
-        ("سلمان", "طارق", "@salman_tariq69"),
-        ("فهد", "رامي", "@fahad_rami70"),
-        ("حسن", "سامي", "@hasan_sami71"),
-        ("رامي", "يوسف", "@rami_yousef72"),
-        ("مازن", "خالد", "@mazen_khaled73"),
-        ("سامي", "سعيد", "@sami_saeed74"),
-        ("أحمد", "فهد", "@ahmad_fahad75"),
-        ("محمد", "سلمان", "@mohamed_salman76"),
-        ("يوسف", "خالد", "@yousef_khaled77"),
-        ("خالد", "طارق", "@khaled_tariq78"),
-        ("سلمان", "رامي", "@salman_rami79"),
-        ("فهد", "مازن", "@fahad_mazen80"),
+        ("فهد", "أحمد", "@fahad_ahmad30")
     ],
     "ecuador": [
-        ("Carlos", "Vega", "@carlos_vega81"),
-        ("Miguel", "Lopez", "@miguel_lopez82"),
-        ("Juan", "Torres", "@juan_torres83"),
-        ("Diego", "Mendoza", "@diego_mendoza84"),
-        ("Luis", "Fernandez", "@luis_fernandez85"),
-        ("Pedro", "Martinez", "@pedro_martinez86"),
-        ("Jorge", "Rojas", "@jorge_rojas87"),
-        ("Andres", "Gomez", "@andres_gomez88"),
-        ("Ricardo", "Castro", "@ricardo_castro89"),
-        ("Francisco", "Salazar", "@francisco_salazar90"),
-        ("Manuel", "Perez", "@manuel_perez91"),
-        ("Rafael", "Diaz", "@rafael_diaz92"),
-        ("Hector", "Cruz", "@hector_cruz93"),
-        ("Oscar", "Alvarez", "@oscar_alvarez94"),
-        ("Victor", "Santos", "@victor_santos95"),
-        ("Eduardo", "Ramos", "@eduardo_ramos96"),
-        ("Javier", "Ortega", "@javier_ortega97"),
-        ("Felipe", "Gutierrez", "@felipe_gutierrez98"),
-        ("Diego", "Paredes", "@diego_paredes99"),
-        ("Marco", "Vargas", "@marco_vargas100"),
-        ("Alberto", "Romero", "@alberto_romero101"),
-        ("Gustavo", "Navarro", "@gustavo_navarro102"),
-        ("Sergio", "Mora", "@sergio_mora103"),
-        ("Martin", "Fuentes", "@martin_fuentes104"),
-        ("Joaquin", "Reyes", "@joaquin_reyes105"),
-        ("Carlos", "Ortiz", "@carlos_ortiz106"),
-        ("Fernando", "Silva", "@fernando_silva107"),
-        ("Luis", "Garcia", "@luis_garcia108"),
-        ("Andres", "Salinas", "@andres_salinas109"),
-        ("Pedro", "Cordero", "@pedro_cordero110"),
-        ("Jorge", "Lozano", "@jorge_lozano111"),
-        ("Manuel", "Vega", "@manuel_vega112"),
-        ("Rafael", "Pinto", "@rafael_pinto113"),
-        ("Hector", "Morales", "@hector_morales114"),
-        ("Oscar", "Vasquez", "@oscar_vasquez115"),
-        ("Victor", "Diaz", "@victor_diaz116"),
-        ("Eduardo", "Santos", "@eduardo_santos117"),
-        ("Javier", "Perez", "@javier_perez118"),
-        ("Felipe", "Martinez", "@felipe_martinez119"),
+        ("Carlos", "Vega", "@carlos_vega01"),
+        ("Miguel", "Lopez", "@miguel_lopez02"),
+        ("Juan", "Torres", "@juan_torres03"),
+        ("Diego", "Mendoza", "@diego_mendoza04"),
+        ("Luis", "Fernandez", "@luis_fernandez05"),
+        ("Pedro", "Martinez", "@pedro_martinez06"),
+        ("Jorge", "Rojas", "@jorge_rojas07"),
+        ("Andres", "Gomez", "@andres_gomez08"),
+        ("Ricardo", "Castro", "@ricardo_castro09"),
+        ("Francisco", "Salazar", "@francisco_salazar10"),
+        ("Manuel", "Perez", "@manuel_perez11"),
+        ("Rafael", "Diaz", "@rafael_diaz12"),
+        ("Hector", "Cruz", "@hector_cruz13"),
+        ("Oscar", "Alvarez", "@oscar_alvarez14"),
+        ("Victor", "Santos", "@victor_santos15"),
+        ("Eduardo", "Ramos", "@eduardo_ramos16"),
+        ("Javier", "Ortega", "@javier_ortega17"),
+        ("Felipe", "Gutierrez", "@felipe_gutierrez18"),
+        ("Diego", "Paredes", "@diego_paredes19"),
+        ("Marco", "Vargas", "@marco_vargas20"),
+        ("Alberto", "Romero", "@alberto_romero21"),
+        ("Gustavo", "Navarro", "@gustavo_navarro22"),
+        ("Sergio", "Mora", "@sergio_mora23"),
+        ("Martin", "Fuentes", "@martin_fuentes24"),
+        ("Joaquin", "Reyes", "@joaquin_reyes25"),
+        ("Carlos", "Ortiz", "@carlos_ortiz26"),
+        ("Fernando", "Silva", "@fernando_silva27"),
+        ("Luis", "Garcia", "@luis_garcia28"),
+        ("Andres", "Salinas", "@andres_salinas29"),
+        ("Pedro", "Cordero", "@pedro_cordero30")
     ],
     "random": [
-        ("Luis", "Fernandez", "@luis_fernandez120"),
-        ("Diego", "Santos", "@diego_santos121"),
-        ("Miguel", "Cruz", "@miguel_cruz122"),
-        ("Carlos", "Ramirez", "@carlos_ramirez123"),
-        ("Jorge", "Lopez", "@jorge_lopez124"),
-        ("Eduardo", "Mendoza", "@eduardo_mendoza125"),
-        ("Fernando", "Garcia", "@fernando_garcia126"),
-        ("Alberto", "Vargas", "@alberto_vargas127"),
-        ("Rafael", "Ortega", "@rafael_ortega128"),
-        ("Sergio", "Diaz", "@sergio_diaz129"),
-        ("Martin", "Castro", "@martin_castro130"),
-        ("Joaquin", "Salazar", "@joaquin_salazar131"),
-        ("Ricardo", "Perez", "@ricardo_perez132"),
-        ("Victor", "Fuentes", "@victor_fuentes133"),
-        ("Oscar", "Reyes", "@oscar_reyes134"),
-        ("Manuel", "Lozano", "@manuel_lozano135"),
-        ("Francisco", "Romero", "@francisco_romero136"),
-        ("Andres", "Mora", "@andres_mora137"),
-        ("Pedro", "Navarro", "@pedro_navarro138"),
-        ("Luis", "Gutierrez", "@luis_gutierrez139"),
-        ("Diego", "Paredes", "@diego_paredes140"),
-        ("Miguel", "Ortiz", "@miguel_ortiz141"),
-        ("Carlos", "Silva", "@carlos_silva142"),
-        ("Jorge", "Garcia", "@jorge_garcia143"),
-        ("Eduardo", "Salinas", "@eduardo_salinas144"),
-        ("Fernando", "Cordero", "@fernando_cordero145"),
-        ("Alberto", "Lozano", "@alberto_lozano146"),
-        ("Rafael", "Vega", "@rafael_vega147"),
-        ("Sergio", "Pinto", "@sergio_pinto148"),
-        ("Martin", "Morales", "@martin_morales149"),
-        ("Joaquin", "Vasquez", "@joaquin_vasquez150"),
-        ("Ricardo", "Diaz", "@ricardo_diaz151"),
-        ("Victor", "Santos", "@victor_santos152"),
-        ("Oscar", "Perez", "@oscar_perez153"),
-        ("Manuel", "Fuentes", "@manuel_fuentes154"),
-        ("Francisco", "Reyes", "@francisco_reyes155"),
-        ("Andres", "Lozano", "@andres_lozano156"),
-        ("Pedro", "Romero", "@pedro_romero157"),
-    ],
+        ("Luis", "Fernandez", "@luis_fernandez31"),
+        ("Diego", "Santos", "@diego_santos32"),
+        ("Miguel", "Cruz", "@miguel_cruz33"),
+        ("Carlos", "Ramirez", "@carlos_ramirez34"),
+        ("Jorge", "Lopez", "@jorge_lopez35"),
+        ("Eduardo", "Mendoza", "@eduardo_mendoza36"),
+        ("Fernando", "Garcia", "@fernando_garcia37"),
+        ("Alberto", "Vargas", "@alberto_vargas38"),
+        ("Rafael", "Ortega", "@rafael_ortega39"),
+        ("Sergio", "Diaz", "@sergio_diaz40"),
+        ("Martin", "Castro", "@martin_castro41"),
+        ("Joaquin", "Salazar", "@joaquin_salazar42"),
+        ("Ricardo", "Perez", "@ricardo_perez43"),
+        ("Victor", "Fuentes", "@victor_fuentes44"),
+        ("Oscar", "Reyes", "@oscar_reyes45"),
+        ("Manuel", "Lozano", "@manuel_lozano46"),
+        ("Francisco", "Romero", "@francisco_romero47"),
+        ("Andres", "Mora", "@andres_mora48"),
+        ("Pedro", "Navarro", "@pedro_navarro49"),
+        ("Luis", "Gutierrez", "@luis_gutierrez50"),
+        ("Diego", "Paredes", "@diego_paredes51"),
+        ("Miguel", "Ortiz", "@miguel_ortiz52"),
+        ("Carlos", "Silva", "@carlos_silva53"),
+        ("Jorge", "Garcia", "@jorge_garcia54"),
+        ("Eduardo", "Salinas", "@eduardo_salinas55"),
+        ("Fernando", "Cordero", "@fernando_cordero56"),
+        ("Alberto", "Lozano", "@alberto_lozano57"),
+        ("Rafael", "Vega", "@rafael_vega58"),
+        ("Sergio", "Pinto", "@sergio_pinto59"),
+        ("Martin", "Morales", "@martin_morales60")
+    ]
 }
 
 # Global storage for user data
-user_gmail_data = {}  # user_id -> {"variations": [], "current_index": 0}
-user_foreign_data = {}  # user_id -> {"country": "", "current_index": 0}
+user_gmail_data = {}
+user_foreign_data = {}
 
-# Generate Gmail variations function
-def generate_gmail_variations(name_parts):
-    """
-    Generates up to MAX_VARIATIONS Gmail variations by joining name parts with dots.
-    """
-    parts = [part.lower() for part in name_parts]  # Convert to lowercase for Gmail
-    all_combinations = set()
-
-    # Generate combinations with dots in different positions
-    for i in range(len(parts) + 1):
-        for combo in product(['', '.'], repeat=len(parts)-1):
-            result = parts[0]
-            for j in range(1, len(parts)):
-                result += combo[j-1] + parts[j]
-            all_combinations.add(result)
+# Generate case variations for Gmail username
+def generate_case_variations(username):
+    variations = set()
+    username_lower = username.lower()
     
-    # Also add combinations without any dots
-    all_combinations.add(''.join(parts))
+    # Generate all possible case combinations
+    for i in range(2 ** len(username_lower)):
+        variation = []
+        for j, char in enumerate(username_lower):
+            if (i >> j) & 1:
+                variation.append(char.upper())
+            else:
+                variation.append(char)
+        variations.add(''.join(variation))
     
-    # Limit the number of variations
-    result = list(all_combinations)[:MAX_VARIATIONS]
-    return result
+    return list(variations)
 
 # Telegram Bot Handlers
 
@@ -231,7 +152,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     user_name = user.first_name
     
-    # Create main menu buttons
     keyboard = [
         [InlineKeyboardButton("📧 Gmail Generator", callback_data="main_gmail")],
         [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
@@ -247,7 +167,6 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
-    # Create main menu buttons
     keyboard = [
         [InlineKeyboardButton("📧 Gmail Generator", callback_data="main_gmail")],
         [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
@@ -260,16 +179,54 @@ async def main_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     query = update.callback_query
     await query.answer()
     
+    user_id = query.from_user.id
+    
+    # Check if user has existing Gmail data
+    if user_id in user_gmail_data and user_gmail_data[user_id]["variations"]:
+        variations = user_gmail_data[user_id]["variations"]
+        current_index = user_gmail_data[user_id]["current_index"]
+        total_count = len(variations)
+        remaining = total_count - current_index
+        
+        if remaining > 0:
+            keyboard = [
+                [InlineKeyboardButton(f"📧 Send Gmail ({remaining} left)", callback_data="send_gmail")],
+                [InlineKeyboardButton("🔄 New Gmail", callback_data="new_gmail")],
+                [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
+            ]
+            
+            text = (
+                f"📧 **Gmail Generator**\n\n"
+                f"You have **{remaining}** variations remaining from previous session.\n\n"
+                f"Click 'Send Gmail' to continue receiving variations.\n"
+                f"Or click 'New Gmail' to generate new variations."
+            )
+            await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+            return
+    
+    # If no existing data, show normal Gmail input
     text = (
         "📧 **Gmail Generator**\n\n"
-        "Please send me your full name (first, middle, last) separated by spaces.\n\n"
-        "Example: `John Michael Smith`\n\n"
-        "I will generate all possible Gmail variations for you!"
+        "Please send me your complete Gmail address.\n\n"
+        "Example: `john.doe@gmail.com`\n\n"
+        "I will generate all possible case variations for the username part!"
     )
     
-    # Back button to main menu
-    keyboard = [[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]
+    keyboard = [[InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]]
+    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+
+async def new_gmail_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
     
+    text = (
+        "📧 **New Gmail Variations**\n\n"
+        "Please send me your complete Gmail address.\n\n"
+        "Example: `john.doe@gmail.com`\n\n"
+        "I will generate all possible case variations for the username part!"
+    )
+    
+    keyboard = [[InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]]
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 async def main_foreign_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -278,11 +235,10 @@ async def main_foreign_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     
     # Show country options as buttons
     buttons = [
-        [InlineKeyboardButton("Saudi Arabia 🇸🇦", callback_data="country_saudi"),
-         InlineKeyboardButton("Sudan 🇸🇩", callback_data="country_sudan")],
-        [InlineKeyboardButton("Ecuador 🇪🇨", callback_data="country_ecuador"),
-         InlineKeyboardButton("Random 🌍", callback_data="country_random")],
-        [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+        [InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data="country_saudi")],
+        [InlineKeyboardButton("🇪🇨 Ecuador", callback_data="country_ecuador")],
+        [InlineKeyboardButton("🌍 Random Names", callback_data="country_random")],
+        [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
     ]
     
     text = "🌍 **Foreign Names**\n\nPlease choose a country:"
@@ -292,13 +248,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     text = update.message.text.strip()
 
-    # Check if it's a name for Gmail generation
-    if len(text.split()) >= 2 and not text.startswith('/'):
-        # Split name parts
-        parts = text.split()
+    # Check if it's a Gmail address for variation generation
+    if text and not text.startswith('/') and '@gmail.com' in text:
+        # Extract username from Gmail address
+        username = text.split('@')[0].strip()
         
-        # Generate variations
-        variations = generate_gmail_variations(parts)
+        if not username:
+            await update.message.reply_text("Please send a valid Gmail address.")
+            return
+        
+        # Generate case variations
+        variations = generate_case_variations(username)
         
         # Store in global storage
         user_gmail_data[user_id] = {
@@ -306,27 +266,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "current_index": 0
         }
         
-        # Show first few variations and total count
-        variations_text = "\n".join([f"`{v}`" for v in variations[:5]])  # Show first 5 only for brevity
         total_count = len(variations)
         
-        # Create buttons - এখন শুধুমাত্র "Send Mail" বাটন থাকবে
+        # Create keyboard with remaining count
         keyboard = [
-            [InlineKeyboardButton("📧 Send Mail 💌", callback_data="send_gmail")],
-            [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+            [InlineKeyboardButton(f"📧 Send Gmail ({total_count} left)", callback_data="send_gmail")],
+            [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
         ]
         
         await update.message.reply_text(
-            f"✅ **Successfully generated {total_count} Gmail variations!**\n\n"
-            f"**Sample variations:**\n{variations_text}\n\n"
-            f"... and **{total_count - 5}** more variations!\n\n"
-            f"Click **'Send Mail 💌'** to receive variations one by one:",
+            f"✅ **Successfully generated {total_count} case variations!**\n\n"
+            f"Click the button below to receive variations one by one:",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
     
+    elif text and not text.startswith('/'):
+        await update.message.reply_text("Please send a valid Gmail address (e.g., example@gmail.com)")
+    
     else:
-        # If user sends random text, show main menu
         keyboard = [
             [InlineKeyboardButton("📧 Gmail Generator", callback_data="main_gmail")],
             [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
@@ -351,68 +309,63 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     elif data == "main_gmail":
         await main_gmail_handler(update, context)
         return
+        
+    # Handle New Gmail Option
+    elif data == "new_gmail":
+        await new_gmail_handler(update, context)
+        return
 
     # Handle Main Foreign Option
     elif data == "main_foreign":
         await main_foreign_handler(update, context)
         return
 
-    # Handle Gmail sending - এখন একবারে একটি করে মেইল সেন্ড হবে
+    # Handle Gmail sending
     elif data == "send_gmail":
         if user_id not in user_gmail_data or not user_gmail_data[user_id]["variations"]:
-            await query.message.reply_text("No Gmail variations found. Please send your name again.")
+            await query.message.reply_text("No Gmail variations found. Please send your Gmail address first.")
             return
         
         variations = user_gmail_data[user_id]["variations"]
         current_index = user_gmail_data[user_id]["current_index"]
         
         if current_index < len(variations):
-            # Send current variation (একটি করে)
+            # Send current variation (one at a time)
             variation = variations[current_index]
             await context.bot.send_message(
                 chat_id=query.message.chat_id,
-                text=f"**{current_index + 1}. {variation}@gmail.com**",
-                parse_mode='Markdown'
+                text=f"{variation}@gmail.com"
             )
             
             # Update index
             user_gmail_data[user_id]["current_index"] += 1
             
-            # যদি আরও ভেরিয়েশন থাকে, তাহলে আবার "Send Mail" বাটন শো করবে
-            if user_gmail_data[user_id]["current_index"] < len(variations):
-                remaining = len(variations) - user_gmail_data[user_id]["current_index"]
-                
-                # শুধুমাত্র "Send Mail" বাটন থাকবে, কোন "Send All" নেই
+            # Update button with remaining count
+            remaining = len(variations) - user_gmail_data[user_id]["current_index"]
+            
+            if remaining > 0:
                 keyboard = [
-                    [InlineKeyboardButton(f"📧 Send Next Mail 💌 ({remaining} left)", callback_data="send_gmail")],
-                    [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+                    [InlineKeyboardButton(f"📧 Send Gmail ({remaining} left)", callback_data="send_gmail")],
+                    [InlineKeyboardButton("🔙 Main Menu", callback_data="main_menu")]
                 ]
                 
-                # শুধু বাটন আপডেট করবে, নতুন মেসেজ সেন্ড করবে না
                 try:
                     await query.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
                 except:
-                    # যদি edit না হয়, নতুন মেসেজ সেন্ড করবে
-                    await context.bot.send_message(
-                        chat_id=query.message.chat_id,
-                        text=f"**{remaining}** variations remaining. Click below to get next one:",
-                        reply_markup=InlineKeyboardMarkup(keyboard),
-                        parse_mode='Markdown'
-                    )
+                    # If message can't be edited, send new one
+                    pass
             else:
-                # সব ভেরিয়েশন সেন্ড হয়ে গেলে
+                # All variations sent
                 await query.message.edit_reply_markup(reply_markup=None)
                 await context.bot.send_message(
                     chat_id=query.message.chat_id,
-                    text="✅ **All Gmail variations have been sent!**\n\nUse the buttons below to generate new variations or explore other services:",
+                    text="✅ **All Gmail variations have been sent!**\n\nUse the buttons below to generate new variations:",
                     reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("📧 New Gmail Variations", callback_data="main_gmail")],
-                        [InlineKeyboardButton("🌍 Foreign Names", callback_data="main_foreign")]
+                        [InlineKeyboardButton("📧 New Gmail", callback_data="new_gmail")],
+                        [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
                     ]),
                     parse_mode='Markdown'
                 )
-                # Reset index for next time
-                user_gmail_data[user_id]["current_index"] = 0
     
     # Handle country selection for foreign names
     elif data.startswith("country_"):
@@ -423,7 +376,6 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             await query.message.reply_text("No data found for this country.")
             return
 
-        # Initialize or get user's foreign data
         if user_id not in user_foreign_data:
             user_foreign_data[user_id] = {"country": country, "current_index": 0}
         else:
@@ -433,17 +385,15 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         current_index = user_foreign_data[user_id]["current_index"]
         first_name, last_name, tg_username = names[current_index]
 
-        # Country display names
         country_names = {
-            "saudi": "Saudi Arabia 🇸🇦",
-            "sudan": "Sudan 🇸🇩", 
-            "ecuador": "Ecuador 🇪🇨",
-            "random": "Random 🌍"
+            "saudi": "🇸🇦 Saudi Arabia",
+            "ecuador": "🇪🇨 Ecuador", 
+            "random": "🌍 Random Names"
         }
 
         keyboard = [
             [InlineKeyboardButton("🔄 Next Name", callback_data="change_foreign")],
-            [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign"),
+            [InlineKeyboardButton("🔙 Back", callback_data="main_foreign"),
              InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
         ]
         
@@ -451,7 +401,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             text=f"**{country_names[country]}**\n\n"
                  f"👤 **Name:** {first_name} {last_name}\n"
                  f"📱 **Telegram:** {tg_username}\n\n"
-                 f"📊 **Page:** {current_index+1}/{len(names)}",
+                 f"📊 **{current_index+1}/{len(names)}**",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -469,24 +419,21 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             await query.message.reply_text("No data found for this country.")
             return
         
-        # Move to next name (circular)
         current_index = user_foreign_data[user_id]["current_index"]
         next_index = (current_index + 1) % len(names)
         user_foreign_data[user_id]["current_index"] = next_index
         
         first_name, last_name, tg_username = names[next_index]
         
-        # Country display names
         country_names = {
-            "saudi": "Saudi Arabia 🇸🇦",
-            "sudan": "Sudan 🇸🇩",
-            "ecuador": "Ecuador 🇪🇨", 
-            "random": "Random 🌍"
+            "saudi": "🇸🇦 Saudi Arabia",
+            "ecuador": "🇪🇨 Ecuador",
+            "random": "🌍 Random Names"
         }
         
         keyboard = [
             [InlineKeyboardButton("🔄 Next Name", callback_data="change_foreign")],
-            [InlineKeyboardButton("🔙 Back to Countries", callback_data="main_foreign"),
+            [InlineKeyboardButton("🔙 Back", callback_data="main_foreign"),
              InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
         ]
         
@@ -494,7 +441,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             text=f"**{country_names[country]}**\n\n"
                  f"👤 **Name:** {first_name} {last_name}\n"
                  f"📱 **Telegram:** {tg_username}\n\n"
-                 f"📊 **Page:** {next_index+1}/{len(names)}",
+                 f"📊 **{next_index+1}/{len(names)}**",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
@@ -509,7 +456,7 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_query_handler))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
 
-    print("Bot started with button interface...")
+    print("Bot started with complete features...")
     app.run_polling()
 
 if __name__ == "__main__":
