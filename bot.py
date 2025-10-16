@@ -6,7 +6,7 @@ from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
     MessageHandler, ContextTypes, filters
 )
-import asyncio
+import os
 
 # ✅ Telegram Bot Token
 BOT_TOKEN = "8107648163:AAH5pbOD_yjOHdV8yWiN3Zw702bNOl7LmpQ"
@@ -18,13 +18,14 @@ flask_app = Flask(__name__)
 def home():
     return "Bot is running!"
 
-def run_flask():
-    flask_app.run(host="0.0.0.0", port=5000)
+# Health check endpoint
+@flask_app.route("/health")
+def health():
+    return "OK", 200
 
-def keep_alive():
-    t = Thread(target=run_flask)
-    t.daemon = True
-    t.start()
+# Global storage for user data
+user_gmail_data = {}
+user_foreign_data = {}
 
 # ✅ Foreign Names with Telegram usernames
 foreign_data = {
@@ -34,11 +35,6 @@ foreign_data = {
         ("علي", "سلمان", "@ali_salman03"),
         ("خالد", "حسن", "@khaled_hassan04"),
         ("سعيد", "فهد", "@saeed_fahad05"),
-        ("إبراهيم", "ماجد", "@ibrahim_majed06"),
-        ("حسن", "ناصر", "@hasan_nasser07"),
-        ("سلمان", "رامي", "@salman_rami08"),
-        ("فهد", "خالد", "@fahad_khaled09"),
-        ("ناصر", "سعيد", "@nasser_saeed10"),
     ],
     "ecuador": [
         ("Carlos", "Vega", "@carlos_vega01"),
@@ -46,11 +42,6 @@ foreign_data = {
         ("Juan", "Torres", "@juan_torres03"),
         ("Diego", "Mendoza", "@diego_mendoza04"),
         ("Luis", "Fernandez", "@luis_fernandez05"),
-        ("Pedro", "Martinez", "@pedro_martinez06"),
-        ("Jorge", "Rojas", "@jorge_rojas07"),
-        ("Andres", "Gomez", "@andres_gomez08"),
-        ("Ricardo", "Castro", "@ricardo_castro09"),
-        ("Francisco", "Salazar", "@francisco_salazar10"),
     ],
     "random": [
         ("Luis", "Fernandez", "@luis_fernandez31"),
@@ -58,17 +49,8 @@ foreign_data = {
         ("Miguel", "Cruz", "@miguel_cruz33"),
         ("Carlos", "Ramirez", "@carlos_ramirez34"),
         ("Jorge", "Lopez", "@jorge_lopez35"),
-        ("Eduardo", "Mendoza", "@eduardo_mendoza36"),
-        ("Fernando", "Garcia", "@fernando_garcia37"),
-        ("Alberto", "Vargas", "@alberto_vargas38"),
-        ("Rafael", "Ortega", "@rafael_ortega39"),
-        ("Sergio", "Diaz", "@sergio_diaz40"),
     ]
 }
-
-# Global storage for user data
-user_gmail_data = {}
-user_foreign_data = {}
 
 # Generate ALL possible case variations for Gmail username
 def generate_case_variations(username):
@@ -86,7 +68,7 @@ def generate_case_variations(username):
     
     return list(variations)
 
-# Fast button handlers - no delays
+# Telegram Bot Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     user_name = user.first_name
@@ -175,7 +157,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Please send valid Gmail address.")
             return
         
-        # Generate variations
         variations = generate_case_variations(username)
         
         user_gmail_data[user_id] = {
@@ -252,7 +233,6 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
                     await query.edit_message_text("✅ All variations sent!")
                     user_gmail_data[user_id]["current_index"] = 0
         
-        # ✅ FAST COUNTRY HANDLERS
         elif data == "saudi":
             names = foreign_data["saudi"]
             first_name, last_name, tg_username = names[0]
@@ -264,10 +244,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             ]
             
             await query.edit_message_text(
-                f"**🇸🇦 Saudi Arabia**\n\n"
-                f"👤 {first_name} {last_name}\n"
-                f"📱 {tg_username}\n\n"
-                f"1/{len(names)}",
+                f"**🇸🇦 Saudi Arabia**\n\n👤 {first_name} {last_name}\n📱 {tg_username}\n\n1/{len(names)}",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -283,10 +260,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             ]
             
             await query.edit_message_text(
-                f"**🇪🇨 Ecuador**\n\n"
-                f"👤 {first_name} {last_name}\n"
-                f"📱 {tg_username}\n\n"
-                f"1/{len(names)}",
+                f"**🇪🇨 Ecuador**\n\n👤 {first_name} {last_name}\n📱 {tg_username}\n\n1/{len(names)}",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -302,10 +276,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             ]
             
             await query.edit_message_text(
-                f"**🌍 Random Names**\n\n"
-                f"👤 {first_name} {last_name}\n"
-                f"📱 {tg_username}\n\n"
-                f"1/{len(names)}",
+                f"**🌍 Random Names**\n\n👤 {first_name} {last_name}\n📱 {tg_username}\n\n1/{len(names)}",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -332,10 +303,7 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
             ]
             
             await query.edit_message_text(
-                f"**{country_names[country]}**\n\n"
-                f"👤 {first_name} {last_name}\n"
-                f"📱 {tg_username}\n\n"
-                f"{next_index+1}/{len(names)}",
+                f"**{country_names[country]}**\n\n👤 {first_name} {last_name}\n📱 {tg_username}\n\n{next_index+1}/{len(names)}",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
@@ -343,20 +311,34 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
     except Exception as e:
         await query.edit_message_text("Error occurred. Please try /start again.")
 
-# Main function - optimized for Render
-def main():
-    keep_alive()
-    
-    # Fast bot configuration
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    
-    # Add handlers
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(callback_query_handler))
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    
-    print("🚀 FAST BOT STARTED - OPTIMIZED FOR RENDER")
-    app.run_polling(drop_pending_updates=True)  # Faster startup
+def run_bot():
+    """Run the bot with proper error handling for Render"""
+    try:
+        app = ApplicationBuilder().token(BOT_TOKEN).build()
+        
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(CallbackQueryHandler(callback_query_handler))
+        app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+        
+        print("🚀 Bot started on Render - Single Instance")
+        app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
+        
+    except Exception as e:
+        print(f"Bot error: {e}")
+        # Restart after 10 seconds if error occurs
+        import time
+        time.sleep(10)
+        run_bot()
+
+def run_flask_server():
+    """Run Flask server for Render"""
+    flask_app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 if __name__ == "__main__":
-    main()
+    # Start Flask in a separate thread
+    flask_thread = Thread(target=run_flask_server)
+    flask_thread.daemon = True
+    flask_thread.start()
+    
+    # Start the bot
+    run_bot()
